@@ -16,8 +16,15 @@ const setUserToken = (res, user) => {
     passwordReset: user.passwordReset,
   };
   const token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-  // Set cookie expiration time
-  res.cookie('token', token, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+  // Set cookie expiration time (maxAge requires milliseconds)
+  // Perhitungan: 24 (jam) * 60 (menit) * 60 (detik) * 1000 (milidetik) = 1 hari (86.400.000 ms)
+  res.cookie('token', token, {
+    // maxAge: 5 * 1000,           // test hanya 5 detik
+    maxAge: 24 * 60 * 60 * 1000, // Production
+    httpOnly: true,             // cookies tidak dapat diakses via JavaScript client-side (keamanan)
+    secure: false,              // set ke true jika menggunakan HTTPS
+    sameSite: 'lax'             // melindungi dari serangan CSRF
+  });
 };
 
 // GET login page
@@ -29,12 +36,12 @@ router.get('/login', (req, res) => {
 // POST login request (Local Strategy)
 router.post('/login', passport.authenticate('local', { session: false, failureRedirect: '/auth/login' }), (req, res) => {
   setUserToken(res, req.user);
-  
+
   // Prompt the user to change the password upon first login if passwordReset is true
   if (req.user.passwordReset) {
     return res.redirect('/auth/update-password');
   }
-  
+
   res.redirect('/');
 });
 
@@ -47,7 +54,7 @@ router.get('/register', (req, res) => {
 // POST register request
 router.post('/register', async (req, res, next) => {
   const { email, name, password } = req.body;
-  
+
   try {
     // Check if email already registered
     const exists = await User.findOne({ email });
@@ -57,13 +64,13 @@ router.post('/register', async (req, res, next) => {
 
     // Password hash value storage
     const hash = crypto.createHash('sha1').update(password).digest("hex");
-    
+
     await User.create({
       email,
       name,
       password: hash,
     });
-    
+
     // Redirect to main screen after joining
     res.redirect('/');
   } catch (err) {
@@ -149,12 +156,12 @@ router.post('/update-password', async (req, res, next) => {
 
   try {
     const pwHash = crypto.createHash('sha1').update(password).digest("hex");
-    
+
     await User.findOneAndUpdate(
       { _id: req.user._id },
       { password: pwHash, passwordReset: false }
     );
-    
+
     // We update the user token to remove passwordReset flag
     const updatedUser = await User.findById(req.user._id);
     setUserToken(res, updatedUser);
@@ -170,8 +177,8 @@ router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
-router.get('/google/callback', passport.authenticate('google', { 
-  session: false, failureRedirect: '/auth/login' 
+router.get('/google/callback', passport.authenticate('google', {
+  session: false, failureRedirect: '/auth/login'
 }), (req, res) => {
   // If successful login, generate JWT and redirect
   setUserToken(res, req.user);
