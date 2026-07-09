@@ -1,0 +1,22 @@
+extends ../layout
+
+block content
+  h2 Login
+  
+  form(action="/auth/login" method="post")
+    table
+      tbody
+        tr
+          td Email
+          td: input(type="email" name="email" required)
+        tr
+          td Password
+          td: input(type="password" name="password" required)
+        tr
+          td(colspan="2")
+            input(type="submit" value="Login")
+  
+  p 
+    a(href="/auth/google") Log in with Google
+  p
+    a(href="/auth/reset-password") Forgot Password?

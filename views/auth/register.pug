@@ -1,0 +1,50 @@
+extends ../layout
+
+block content
+  h2 Register
+  
+  form(action="/auth/register" method="post" onsubmit="return check()")
+    table
+      tbody
+        tr
+          td Email
+          td: input(type="text" name="email" id="email" required)
+        tr
+          td Name
+          td: input(type="text" name="name" required)
+        tr
+          td Password
+          td: input(type="password" name="password" id="password" required)
+        tr
+          td Password Confirmation
+          td: input(type="password" name="password_confirm" id="password_confirm" required)
+        tr
+          td(colspan="2")
+            input(type="submit" value="Sign Up")
+
+  // Client-side script validation
+  script.
+    function check() {
+      const email = document.querySelector('#email').value;
+      // Validate email format
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        alert('The email format is invalid.');
+        return false;
+      }
+      
+      const password = document.querySelector('#password').value;
+      // Validate password length
+      if (password.length < 8) {
+        alert("Please set a password of at least 8 characters.");
+        return false;
+      }
+
+      const passwordConfirm = document.querySelector('#password_confirm').value;
+      // Validate password match
+      if (password != passwordConfirm) {
+        alert('The password confirmation does not match.');
+        return false;
+      }
+      
+      return true;
+    }

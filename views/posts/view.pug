@@ -1,0 +1,116 @@
+extends ../layout
+
+block content
+  h2= post.title
+  
+  table
+    tbody
+      tr
+        td(colspan="2") Author: #{post.author.name} | Created At: #{formatDate(post.createdAt)}
+      tr
+        td(colspan="2")
+          pre= post.content
+      
+      // If logged in and author matches, show edit/delete options
+      if user && post.author._id.toString() == user._id.toString()
+        tr
+          td
+            a(href=`/posts/${post.shortId}?edit=true`) Modification
+          td
+            button(onclick=`deletePost("${post.shortId}")`) Delete
+
+  h3 Comments
+  table
+    thead
+      tr
+        td(colspan="2")
+          input#content(type="text" placeholder="Add a comment...")
+        td
+          button(onclick="writeComment()") Writing a comment
+    tbody#comments
+
+  // HTML Template for CSR (Client-Side Rendering)
+  template#comment-template
+    tr
+      td.content
+      td.author
+      td.createdAt
+
+  script(type="text/javascript").
+    // Delete Post handler
+    function deletePost(shortId) {
+      if(!confirm("Are you sure you want to delete this post?")) return;
+      
+      fetch('/posts/' + shortId, { method: 'delete' })
+        .then((res) => {
+          if (res.ok) {
+            alert('Post has been deleted.');
+            window.location.href = '/posts';
+          } else {
+            alert('An error has occurred.');
+            console.log(res.statusText);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          alert('An error has occurred.');
+        });
+    }
+
+    // CSR Comments logic
+    function loadComments() {
+      const commentsTbody = document.querySelector('#comments');
+      commentsTbody.innerHTML = ''; // Clear previous list
+      
+      fetch('/api/posts/#{post.shortId}/comments')
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error('Failed to load comments');
+          }
+        })
+        .then((comments) => {
+          comments.forEach(addComment);
+        })
+        .catch((err) => alert(err.message));
+    }
+
+    function addComment(comment) {
+      const template = document.querySelector('#comment-template');
+      const node = document.importNode(template.content, true);
+      
+      node.querySelector('.content').textContent = comment.content;
+      // Depending on whether it's populated or not, author might be an object
+      node.querySelector('.author').textContent = comment.author ? comment.author.name : 'Unknown';
+      node.querySelector('.createdAt').textContent = new Date(comment.createdAt).toLocaleString();
+      
+      document.querySelector('#comments').appendChild(node);
+    }
+
+    function writeComment() {
+      const input = document.querySelector('#content');
+      const content = input.value;
+      if (!content.trim()) return alert("Comment cannot be empty");
+
+      fetch('/api/posts/#{post.shortId}/comments', {
+        method: 'post',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      })
+      .then((res) => {
+        if (res.ok) {
+          input.value = ''; // clear input
+          loadComments(); // Re-fetch and re-render
+        } else {
+          alert('An error has occurred.');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('You might need to be logged in to comment.');
+      });
+    }
+
+    // Initial load
+    loadComments();

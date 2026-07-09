@@ -1,0 +1,23 @@
+extends ../layout
+
+block content
+  h2= post ? "Edit Post" : "Create Post"
+  
+  // Dynamic action URL
+  - var actionUrl = post ? `/posts/${post.shortId}` : "/posts"
+  
+  form(action=actionUrl method="post")
+    table
+      tbody
+        tr
+          th Title
+          td
+            input(type="text" name="title" value=(post ? post.title : '') required minlength="5")
+        tr
+          th Content
+          td
+            textarea(name="content" required minlength="10" rows="5")= post ? post.content : ''
+        tr
+          td(colspan="2" style="text-align: right;")
+            - var btnValue = post ? "Edit" : "Registration"
+            input(type="submit" value=btnValue)

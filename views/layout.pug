@@ -1,0 +1,31 @@
+doctype html
+html
+  head
+    title= title ? `${title} - ${appName}` : appName
+    style.
+      body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+      nav { margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+      nav a { margin-right: 10px; text-decoration: none; color: blue; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+      th { background-color: #f4f4f4; }
+      button { cursor: pointer; padding: 5px 10px; }
+      .comment-box { border: 1px solid #eee; padding: 10px; margin-top: 10px; background: #f9f9f9; }
+      .comment-form { margin-top: 10px; display: flex; gap: 10px; }
+      input[type="text"], input[type="password"], input[type="email"], textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+      .actions { margin-top: 10px; display: flex; gap: 10px; }
+  body
+    h1= appName
+    nav
+      a(href="/") Home
+      a(href="/posts") Bulletin Board
+      // Conditional rendering based on user presence
+      if user
+        span Welcome, #{user.name}! 
+        a(href="/auth/logout") Logout
+      else
+        a(href="/auth/login") Login
+        a(href="/auth/register") Register
+
+    // Block for page specific content
+    block content

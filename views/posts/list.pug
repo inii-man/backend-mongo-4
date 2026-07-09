@@ -1,0 +1,35 @@
+extends ../layout
+
+mixin pagination(path)
+  p
+    - for(let i = 1; i <= totalPage; i++)
+      if i == page
+        b= i
+        |  
+      else
+        a(href=`${path}?page=${i}&perPage=${perPage}`)= i
+        |  
+
+block content
+  h2= user ? `${user.name}'s posts / All posts` : "All posts"
+  
+  table
+    thead
+      tr
+        th Title
+        th Author
+        th Date
+    tbody
+      each post in posts
+        tr
+          td
+            a(href=`/posts/${post.shortId}`)= post.title
+          td= post.author.name
+          td= formatDate(post.createdAt)
+    tfoot
+      tr
+        td(colspan="3")
+          a(href="/posts?write=true") Register / Create Post
+
+  // Using pagination mixin
+  +pagination(path)
