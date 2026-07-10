@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
     const perPage = Number(req.query.perPage || 10);
 
     const total = await Post.countDocuments({});
-    
+
     // Retrieve paginated data
     const posts = await Post.find({})
       .sort({ createdAt: -1 })
@@ -27,11 +27,11 @@ router.get('/', async (req, res, next) => {
 
     const totalPage = Math.ceil(total / perPage);
 
-    res.render('posts/list', { 
-      title: 'Posts List', 
-      posts, 
-      page, 
-      perPage, 
+    res.render('posts/list', {
+      title: 'Posts List',
+      posts,
+      page,
+      perPage,
       totalPage,
       path: '/posts'
     });
@@ -52,10 +52,10 @@ router.get('/:shortId', async (req, res, next) => {
       if (!post) {
         return next(new Error('Post NotFound'));
       }
-      
+
       // Verify author matches logged-in user
       if (post.author._id.toString() !== req.user._id.toString()) {
-        throw new Error('Not Authorized');
+        throw new Error('Not h Authorized');
       }
 
       return res.render('posts/edit', { title: 'Edit Post', post });
@@ -68,7 +68,7 @@ router.get('/:shortId', async (req, res, next) => {
     // Fetch post and populate author
     const post = await Post.findOne({ shortId }).populate('author');
     if (!post) {
-      return next(new Error('Post NotFound'));
+      return next(new Error('Post h NotFound'));
     }
 
     res.render('posts/view', { title: post.title, post });
@@ -97,7 +97,7 @@ router.post('/', loginRequired, async (req, res, next) => {
 router.post('/:shortId', loginRequired, async (req, res, next) => {
   const { shortId } = req.params;
   const { title, content } = req.body;
-  
+
   try {
     // First, fetch the post to verify ownership
     const post = await Post.findOne({ shortId }).populate('author');
@@ -142,7 +142,7 @@ router.delete('/:shortId', loginRequired, async (req, res, next) => {
 router.get('/author/:authorId/summary', async (req, res, next) => {
   try {
     const { authorId } = req.params;
-    
+
     // Convert string ID to mongoose ObjectId for matching
     const mongoose = require('mongoose');
     const objectId = new mongoose.Types.ObjectId(authorId);
