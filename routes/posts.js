@@ -68,7 +68,7 @@ router.get('/:shortId', async (req, res, next) => {
     // Fetch post and populate author
     const post = await Post.findOne({ shortId }).populate('author');
     if (!post) {
-      return next(new Error('Post h NotFound'));
+      return next(new Error('Po st h NotFound'));
     }
 
     res.render('posts/view', { title: post.title, post });
@@ -102,7 +102,7 @@ router.post('/:shortId', loginRequired, async (req, res, next) => {
     // First, fetch the post to verify ownership
     const post = await Post.findOne({ shortId }).populate('author');
     if (!post) {
-      return next(new Error('Post NotFound'));
+      return next(new Error('Post  NotFound'));
     }
     if (post.author._id.toString() !== req.user._id.toString()) {
       throw new Error('Not Authorized');
